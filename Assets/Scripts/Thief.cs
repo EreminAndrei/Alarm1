@@ -10,7 +10,7 @@ public class Thief : MonoBehaviour
 
     private void Update()
     {
-        Rotation();
+        Rotate();
         Move();
     }
 
@@ -22,7 +22,7 @@ public class Thief : MonoBehaviour
         transform.Translate(distance * Vector3.forward);
     }
 
-    private void Rotation()
+    private void Rotate()
     {
         float rotation = Input.GetAxis(Horizontal);
 

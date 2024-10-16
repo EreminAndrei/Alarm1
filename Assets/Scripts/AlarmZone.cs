@@ -1,14 +1,19 @@
 using System.Collections;
 using UnityEngine;
 
+[RequireComponent(typeof(AudioSource))]
+
 public class AlarmZone : MonoBehaviour
 {
     private AudioSource _alarm;    
     
     private float _volumeChangeStepTime = 1.0f;
-    private float _volumeChangeStep = 0.1f;    
+    private float _volumeChangeStep = 0.1f;
 
-    private void Start()
+    private Coroutine _increaseCoroutine;
+    private Coroutine _decreaseCoroutine;
+
+    private void Awake()
     {        
         _alarm = GetComponent<AudioSource>();        
         _alarm.volume = 0;        
@@ -18,9 +23,9 @@ public class AlarmZone : MonoBehaviour
     {
         if (other.GetComponent<Thief>() != null)
         {
-            StopAllCoroutines();
             _alarm.Play();
-            StartCoroutine(VolumeIncrease(_volumeChangeStepTime, _volumeChangeStep));
+            StopDecrease();
+            StartIncrease();
         }
     }
 
@@ -28,9 +33,31 @@ public class AlarmZone : MonoBehaviour
     {
         if (other.GetComponent<Thief>() != null)
         {
-            StopAllCoroutines();
-            StartCoroutine(VolumeDecrease(_volumeChangeStepTime, _volumeChangeStep));
+            StopIncrease();
+            StartDecrease();
         }
+    }
+
+    private void StartIncrease()
+    {
+        _increaseCoroutine = StartCoroutine(VolumeIncrease(_volumeChangeStepTime, _volumeChangeStep));        
+    }
+
+    private void StopIncrease()
+    {
+        if (_increaseCoroutine != null)
+            StopCoroutine(_increaseCoroutine);
+    }
+
+    private void StartDecrease()
+    {
+        _decreaseCoroutine = StartCoroutine(VolumeDecrease(_volumeChangeStepTime, _volumeChangeStep));
+    }
+
+    private void StopDecrease()
+    {
+        if ( _decreaseCoroutine != null)
+            StopCoroutine(_decreaseCoroutine);
     }
 
     private IEnumerator VolumeIncrease (float timeStep, float volumeStep)
