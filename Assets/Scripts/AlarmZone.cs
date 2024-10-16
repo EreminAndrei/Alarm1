@@ -10,8 +10,7 @@ public class AlarmZone : MonoBehaviour
     private float _volumeChangeStepTime = 1.0f;
     private float _volumeChangeStep = 0.1f;
 
-    private Coroutine _increaseCoroutine;
-    private Coroutine _decreaseCoroutine;
+    private Coroutine _changeVolume;    
 
     private void Awake()
     {        
@@ -23,9 +22,10 @@ public class AlarmZone : MonoBehaviour
     {
         if (other.GetComponent<Thief>() != null)
         {
-            _alarm.Play();
-            StopDecrease();
-            StartIncrease();
+            if (_changeVolume != null)
+                StopCoroutine( _changeVolume );
+
+            _changeVolume = StartCoroutine(IncreaseVolume(_volumeChangeStepTime, _volumeChangeStep));            
         }
     }
 
@@ -33,58 +33,38 @@ public class AlarmZone : MonoBehaviour
     {
         if (other.GetComponent<Thief>() != null)
         {
-            StopIncrease();
-            StartDecrease();
+            if (_changeVolume != null)
+                StopCoroutine( _changeVolume );
+
+            _changeVolume = StartCoroutine(DecreaseVolume(_volumeChangeStepTime, _volumeChangeStep));
         }
-    }
+    }    
 
-    private void StartIncrease()
-    {
-        _increaseCoroutine = StartCoroutine(VolumeIncrease(_volumeChangeStepTime, _volumeChangeStep));        
-    }
-
-    private void StopIncrease()
-    {
-        if (_increaseCoroutine != null)
-            StopCoroutine(_increaseCoroutine);
-    }
-
-    private void StartDecrease()
-    {
-        _decreaseCoroutine = StartCoroutine(VolumeDecrease(_volumeChangeStepTime, _volumeChangeStep));
-    }
-
-    private void StopDecrease()
-    {
-        if ( _decreaseCoroutine != null)
-            StopCoroutine(_decreaseCoroutine);
-    }
-
-    private IEnumerator VolumeIncrease (float timeStep, float volumeStep)
+    private IEnumerator IncreaseVolume(float timeStep, float volumeStep)
     {
         var wait = new WaitForSeconds(timeStep);
 
-        while (true)
+        _alarm.Play();
+
+        while (_alarm.volume < 1)
         {
             yield return wait;
-
-            if (_alarm.volume < 1)
-                _alarm.volume += volumeStep;            
+            
+            _alarm.volume += volumeStep;            
         }
     }
 
-    private IEnumerator VolumeDecrease(float timeStep, float volumeStep)
+    private IEnumerator DecreaseVolume(float timeStep, float volumeStep)
     {
         var wait = new WaitForSeconds(timeStep);
 
-        while (true)
+        while (_alarm.volume > 0)
         {
             yield return wait;
-
-            if (_alarm.volume > 0)            
-                _alarm.volume -= volumeStep;   
-            else
-                _alarm.Stop();
+                      
+            _alarm.volume -= volumeStep;               
         }
+
+        _alarm.Stop();
     }
 }
